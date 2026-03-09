@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تطبيق المخدومين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-green: #00b050;
+            --primary-blue: #e6f0ff;
+            --text-blue: #0056b3;
+            --bg-gray: #f8f9fa;
+            --border-gray: #e9ecef;
+            --text-dark: #333;
+            --text-muted: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: #333; /* لون خلفية داكن خارج إطار التطبيق */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* حاوية التطبيق (لمحاكاة شاشة الموبايل) */
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: #fff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* ----- الرأس (Header) ----- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .header-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background-color: #f1c40f;
+            border-radius: 50%;
+            display: inline-block;
+            overflow: hidden;
+        }
+
+        .logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        /* ----- المحتوى الرئيسي ----- */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 20px;
+            background-color: #fff;
+        }
+
+        /* بطاقة الترحيب */
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-blue));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,176,80,0.2);
+        }
+
+        .welcome-card h2 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .welcome-card p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        /* بطاقة نموذج الاجتماع */
+        .meeting-form-card {
+            background-color: #fff;
+            border: 1px solid var(--border-gray);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .meeting-form-card h3 {
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary-green);
+        }
+
+        /* زر إنشاء الاجتماع */
+        .btn-create-meeting {
+            width: 100%;
+            background-color: var(--primary-green);
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-create-meeting:hover {
+            background-color: #008a2c;
+        }
+
+        /* قائمة الاجتماعات */
+        .meetings-list {
+            background-color: #fff;
+            border: 1px solid var(--border-gray);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .meetings-list h3 {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        /* بطاقة الاجتماع */
+        .meeting-card {
+            background-color: var(--bg-gray);
+            border: 1px solid var(--border-gray);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .meeting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .meeting-header h4 {
+            color: var(--text-dark);
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .meeting-code {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .meeting-details p {
+            margin: 5px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meeting-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-manage, .btn-qr, .btn-enter {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-manage {
+            background-color: var(--primary-blue);
+            color: var(--text-blue);
+        }
+
+        .btn-manage:hover {
+            background-color: #a3c9ff;
+        }
+
+        .btn-enter {
+            background-color: var(--primary-green);
+            color: white;
+        }
+
+        .btn-enter:hover {
+            background-color: #008a2c;
+        }
+
+        .btn-qr {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .btn-qr:hover {
+            background-color: #e67e22;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* بطاقة الإجمالي */
+        .summary-card {
+            background-color: var(--primary-blue);
+            border: 1px solid #b3d4ff;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .summary-title {
+            color: var(--text-blue);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-number {
+            color: var(--text-blue);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* زر الإضافة */
+        .btn-add {
+            width: 100%;
+            background-color: var(--primary-green);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* شريط البحث */
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 35px 10px 10px;
+            background-color: var(--bg-gray);
+            border: 1px solid var(--border-gray);
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            outline: none;
+        }
+
+        .search-bar i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* قائمة المخدومين */
+        .list-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .person-card {
+            border: 1px solid var(--border-gray);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .person-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 15px;
+        }
+
+        .person-info-main {
+            text-align: right;
+        }
+
+        .person-name {
+            font-weight: 700;
+            color: var(--text-blue);
+            font-size: 1.1rem;
+        }
+
+        .person-id {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .person-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-blue);
+            color: var(--text-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .edit-icon {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .person-details p {
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .person-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .btn-qr-person {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-scan-qr {
+            width: 100%;
+            background-color: var(--primary-blue);
+            color: var(--text-blue);
+            border: 1px solid #b3d4ff;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-scan-qr:hover {
+            background-color: #a3c9ff;
+        }
+
+        /* قائمة الحضور */
+        .attendance-list {
+            background-color: #fff;
+            border: 1px solid var(--border-gray);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .attendee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .attendee-item:last-child {
+            border-bottom: none;
+        }
+
+        .attendee-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .attendee-name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .attendee-id {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .attendance-time {
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+
+        /* معاينة الشعار */
+        .logo-preview {
+            margin-top: 10px;
+            border: 2px dashed var(--border-gray);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+
+        .logo-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .logo-placeholder-small {
+            color: var(--text-muted);
+        }
+
+        .logo-placeholder-small i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* حقول الخدام */
+        .servant-field {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+        }
+
+        /* صفحة الاجتماع */
+        .meeting-header-card {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-blue));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,176,80,0.2);
+        }
+
+        .meeting-logo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .meeting-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin-bottom: 15px;
+        }
+
+        .meeting-logo-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 3px solid white;
+            margin-bottom: 15px;
+        }
+
+        .meeting-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .meeting-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .meeting-info p {
+            margin: 5px 0;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* الإحصائيات */
+        .meeting-stats {
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-gray);
+        }
+
+        .stat-card:nth-child(1) {
+            display: none; /* إخفاء عدد المخدومين */
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .meeting-tabs {
+            display: flex;
+            padding: 10px 20px;
+            background-color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .meeting-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meeting-tab.active {
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            border: 1px solid var(--border-gray);
+        }
+
+        .meeting-content {
+            background-color: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .meeting-tab-content {
+            display: none;
+        }
+
+        .meeting-tab-content.active {
+            display: block;
+        }
+
+        .meeting-summary-card {
+            background-color: var(--primary-blue);
+            border: 1px solid #b3d4ff;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        /* ----- تبويب تسجيل الحضور ----- */
+        .meeting-date-card {
+            border: 1px solid var(--border-gray);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .meeting-date-card h3 {
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .inputs-row {
+            display: flex;
+            gap: 10px;
+        }
+        .input-group {
+            flex: 1;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            text-align: right;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-gray);
+            border-radius: 5px;
+            background-color: var(--bg-gray);
+            text-align: center;
+        }
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 50px;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: #d1d5db;
+            margin-bottom: 15px;
+        }
+
+        /* ----- القائمة الجانبية (Sidebar) ----- */
+        .sidebar-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 10;
+            display: none;
+        }
+        .sidebar {
+            position: absolute;
+            top: 0; right: -250px; width: 250px; height: 100%;
+            background-color: #fff;
+            z-index: 11;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar.open {
+            right: 0;
+        }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-gray);
+            font-weight: 700;
+        }
+        .sidebar-menu {
+            flex: 1;
+            list-style: none;
+            padding: 20px 0;
+        }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .sidebar-menu li.meeting-button {
+            background-color: var(--primary-green);
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .sidebar-menu li.meeting-button a {
+            color: white;
+            font-weight: 700;
+        }
+
+        .sidebar-menu li.meeting-button a:hover {
+            background-color: #008a2c;
+        }
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-gray);
+        }
+        .sidebar-footer p {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .social-links {
+            list-style: none;
+        }
+        .social-links li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .social-links .fa-facebook { color: #1877F2; }
+        .social-links .fa-whatsapp { color: #25D366; }
+
+        /* ----- نافذة الإضافة (Modal) ----- */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 20;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal {
+            background-color: #fff;
+            width: 90%;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            left: 15px; top: 15px;
+            background: none; border: none; font-size: 1.2rem;
+            color: var(--text-muted); cursor: pointer;
+        }
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { font-size: 1.2rem; color: var(--text-dark); }
+        .modal-header p { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; text-align: right;
+        }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid var(--border-gray);
+            border-radius: 8px; background-color: var(--bg-gray);
+            font-family: 'Cairo', sans-serif;
+        }
+        .btn-submit {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            background-color: #6c757d; color: #fff; font-weight: 700; font-size: 1rem;
+            cursor: pointer; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <header>
+        <div class="header-title">
+            <div class="logo-placeholder"><img src="1.png" alt="logo"></div>
+            <span>المخدومين</span>
+        </div>
+        <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-list"></i></button>
+    </header>
+
+    <div class="main-content">
+        
+        <div id="tab-home" class="tab-content active">
+            <div class="meeting-form-card">
+                <h3>إضافة اجتماع جديد</h3>
+                
+                <div class="form-group">
+                    <label>اسم الاجتماع</label>
+                    <input type="text" id="meetingName" placeholder="أدخل اسم الاجتماع">
+                </div>
+                
+                <div class="form-group">
+                    <label>شعار الاجتماع</label>
+                    <input type="file" id="meetingLogo" accept="image/*" onchange="previewLogo(this)">
+                    <div id="logoPreview" class="logo-preview">
+                        <img id="logoImage" src="" alt="شعار الاجتماع" style="display: none;">
+                        <div id="logoPlaceholder" class="logo-placeholder-small">
+                            <i class="fas fa-image"></i>
+                            <span>اختر شعار الاجتماع</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>الصف</label>
+                    <select id="meetingGrade">
+                        <option value="">اختر الصف</option>
+                        <option>الأولى الثانوي</option>
+                        <option>الثانية الثانوي</option>
+                        <option>الثالثة الثانوي</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>أمين الخدمة</label>
+                    <input type="text" id="serviceLeader" placeholder="أدخل اسم أمين الخدمة">
+                </div>
+                
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="meetingPassword" placeholder="أدخل كلمة مرور الاجتماع">
+                </div>
+                
+                <button class="btn-create-meeting" onclick="createMeeting()">
+                    إنشاء الاجتماع <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <div class="meetings-list" id="meetingsList">
+                <h3>الاجتماعات الموجودة</h3>
+                <!-- سيتم إضافة الاجتماعات هنا ديناميكياً -->
+            </div>
+        </div>
+
+        <div id="tab-meeting" class="tab-content">
+            <div class="meeting-header-card" id="meetingHeader">
+                <!-- سيتم إضافة تفاصيل الاجتماع هنا -->
+            </div>
+
+            <!-- الإحصائيات -->
+            <div class="meeting-stats" id="meetingStats">
+                <!-- سيتم إضافة الإحصائيات هنا -->
+            </div>
+
+            <div class="meeting-tabs">
+                <div class="meeting-tab active" onclick="switchMeetingTab('attendees', this)">
+                    <i class="fas fa-users"></i> المخدومين
+                </div>
+                <div class="meeting-tab" onclick="switchMeetingTab('attendance', this)">
+                    <i class="fas fa-clipboard-check"></i> تسجيل الحضور
+                </div>
+            </div>
+
+            <div class="meeting-content">
+                <div id="meeting-attendees" class="meeting-tab-content active">
+                    <div class="meeting-summary-card">
+                        <span class="summary-number" id="meetingAttendeesCount">0</span>
+                        <div class="summary-title">
+                            إجمالي المخدومين <i class="fas fa-user-friends"></i>
+                        </div>
+                    </div>
+
+                    <button class="btn-add" onclick="toggleModal('addAttendeeModal')">
+                        إضافة مخدوم للاجتماع <i class="fas fa-plus"></i>
+                    </button>
+
+                    <div class="search-bar">
+                        <input type="text" placeholder="ابحث عن مخدوم...">
+                        <i class="fas fa-search"></i>
+                    </div>
+
+                    <h3 class="list-title">مخدومي الاجتماع</h3>
+                    <div id="meetingAttendeesList">
+                        <!-- سيتم إضافة المخدومين هنا -->
+                    </div>
+                </div>
+
+                <div id="meeting-attendance" class="meeting-tab-content">
+                    <div class="meeting-date-card">
+                        <h3>ميعاد الاجتماع <i class="far fa-calendar-alt" style="color:#0056b3"></i></h3>
+                        <div class="inputs-row">
+                            <div class="input-group">
+                                <label>التاريخ</label>
+                                <input type="date" id="meetingDate">
+                            </div>
+                            <div class="input-group">
+                                <label>الوقت</label>
+                                <input type="time" id="meetingTime">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-scan-qr" onclick="scanQRCode()">
+                        <i class="fas fa-camera"></i> مسح QR لتسجيل الحضور
+                    </button>
+
+                    <div class="attendance-list" id="meetingAttendanceList">
+                        <h3>قائمة الحاضرين</h3>
+                        <!-- سيتم إضافة الحاضرين هنا -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="tab-makhdomeen" class="tab-content">
+            <div class="summary-card">
+                <span class="summary-number">3</span>
+                <div class="summary-title">
+                    إجمالي المخدومين <i class="fas fa-user-friends"></i>
+                </div>
+            </div>
+
+            <button class="btn-add" onclick="toggleModal('addModal')">
+                إضافة مخدوم جديد <i class="fas fa-plus"></i>
+            </button>
+
+            <div class="search-bar">
+                <input type="text" placeholder="ابحث عن مخدوم بالاسم...">
+                <i class="fas fa-search"></i>
+            </div>
+
+            <h3 class="list-title">قائمة المخدومين</h3>
+        </div>
+
+        <div id="tab-attendance" class="tab-content">
+            <div class="meeting-date-card">
+                <h3>ميعاد الاجتماع <i class="far fa-calendar-alt" style="color:#0056b3"></i></h3>
+                <div class="inputs-row">
+                    <div class="input-group">
+                        <label>التاريخ</label>
+                        <input type="date">
+                    </div>
+                    <div class="input-group">
+                        <label>الوقت</label>
+                        <input type="time">
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" placeholder="ابحث عن مخدوم لتسجيل حضوره...">
+                <i class="fas fa-search"></i>
+            </div>
+
+            <button class="btn-scan-qr" onclick="scanQRCode()">
+                <i class="fas fa-camera"></i> مسح QR لتسجيل الحضور
+            </button>
+
+            <div class="empty-state">
+                <i class="far fa-calendar-alt"></i>
+                <p>الرجاء تحديد تاريخ ووقت الاجتماع أولاً لبدء تسجيل الحضور</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">القائمة</div>
+        <ul class="sidebar-menu">
+            <li><a href="#" onclick="switchTab('home', this); toggleSidebar(); return false;"><i class="fas fa-home"></i> الرئيسية</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <p>تواصل معنا</p>
+            <ul class="social-links">
+                <li><a href="#"><i class="fab fa-facebook"></i> فيسبوك</a></li>
+                <li><a href="#"><i class="fab fa-whatsapp"></i> واتساب</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <button class="modal-close" onclick="toggleModal('addModal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2>إضافة مخدوم جديد</h2>
+                <p>أدخل بيانات المخدوم الجديد لإضافته إلى القائمة</p>
+            </div>
+            
+            <div class="form-group">
+                <label>الاسم الرباعي</label>
+                <input type="text" placeholder="أدخل الاسم الرباعي">
+            </div>
+            <div class="form-group">
+                <label>رقم موبايل الأب أو الأم</label>
+                <input type="tel" placeholder="01xxxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label>الصف الدراسي</label>
+                <select>
+                    <option disabled selected>اختر الصف</option>
+                    <option>الأولى الثانوي</option>
+                    <option>الثانية الثانوي</option>
+                    <option>الثالثة الثانوي</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>العنوان</label>
+                <input type="text" placeholder="أدخل العنوان">
+            </div>
+            
+            <button class="btn-submit" onclick="addNewPerson()">إضافة</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addAttendeeModal">
+        <div class="modal">
+            <button class="modal-close" onclick="toggleModal('addAttendeeModal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2>إضافة مخدوم للاجتماع</h2>
+                <p>أدخل بيانات المخدوم الجديد لإضافته للاجتماع الحالي</p>
+            </div>
+            
+            <div class="form-group">
+                <label>الاسم الرباعي</label>
+                <input type="text" id="attendeeName" placeholder="أدخل الاسم الرباعي">
+            </div>
+            <div class="form-group">
+                <label>رقم الموبايل</label>
+                <input type="text" id="attendeePhone" placeholder="أدخل رقم الموبايل">
+            </div>
+            <div class="form-group">
+                <label>الصف</label>
+                <select id="attendeeGrade">
+                    <option value="">اختر الصف</option>
+                    <option>الأولى الثانوي</option>
+                    <option>الثانية الثانوي</option>
+                    <option>الثالثة الثانوي</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>العنوان</label>
+                <input type="text" id="attendeeAddress" placeholder="أدخل العنوان">
+            </div>
+            
+            <button class="btn-submit" onclick="addAttendeeToMeeting()">إضافة للاجتماع</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyB2_ANJtQTVNXYNflSIBZ7QOlSXtF4Yx8A",
+        authDomain: "marimina-4faa8.firebaseapp.com",
+        databaseURL: "https://marimina-4faa8-default-rtdb.firebaseio.com",
+        projectId: "marimina-4faa8",
+        storageBucket: "marimina-4faa8.firebasestorage.app",
+        messagingSenderId: "977675624913",
+        appId: "1:977675624913:web:d18e40d877259cd40840f0"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+<script>
+    // التنقل بين التبويبات
+    function switchTab(tabId, element) {
+        // إزالة الكلاس active من جميع المحتوى
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // إضافة الكلاس active للمحتوى المختار
+        document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    // فتح وإغلاق القائمة الجانبية
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            overlay.style.display = 'none';
+        } else {
+            sidebar.classList.add('open');
+            overlay.style.display = 'block';
+        }
+    }
+
+    // فتح وإغلاق النوافذ المنبثقة (Modals)
+    function toggleModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal.style.display === 'flex') {
+            modal.style.display = 'none';
+        } else {
+            modal.style.display = 'flex';
+        }
+    }
+
+    // إنشاء اجتماع جديد
+    function createMeeting() {
+        const meetingName = document.getElementById('meetingName').value;
+        const meetingGrade = document.getElementById('meetingGrade').value;
+        const serviceLeader = document.getElementById('serviceLeader').value;
+        const meetingPassword = document.getElementById('meetingPassword').value;
+        const logoFile = document.getElementById('meetingLogo').files[0];
+
+        if (!meetingName || !meetingGrade || !serviceLeader || !meetingPassword) {
+            alert('يرجى ملء جميع الحقول الأساسية');
+            return;
+        }
+
+        // قراءة الشعار إذا تم اختياره
+        if (logoFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const logoData = e.target.result;
+                createMeetingWithLogo(meetingName, meetingGrade, serviceLeader, meetingPassword, logoData);
+            };
+            reader.readAsDataURL(logoFile);
+        } else {
+            createMeetingWithLogo(meetingName, meetingGrade, serviceLeader, meetingPassword, null);
+        }
+    }
+
+    // إنشاء الاجتماع مع الشعار
+    function createMeetingWithLogo(name, grade, leader, password, logo) {
+        // إنشاء كود عشوائي للاجتماع
+        const meetingCode = generateMeetingCode();
+
+        // إنشاء كائن الاجتماع
+        const meeting = {
+            id: Date.now(),
+            name: name,
+            grade: grade,
+            leader: leader,
+            password: password,
+            logo: logo,
+            code: meetingCode,
+            createdAt: new Date().toISOString(),
+            attendees: {},
+            attendance: {}
+        };
+
+        // حفظ الاجتماع في Firebase
+        saveMeetingToFirebase(meeting);
+
+        // مسح النموذج
+        document.getElementById('meetingName').value = '';
+        document.getElementById('meetingGrade').value = '';
+        document.getElementById('serviceLeader').value = '';
+        document.getElementById('meetingPassword').value = '';
+        document.getElementById('meetingLogo').value = '';
+        
+        // إعادة تعيين معاينة الشعار
+        document.getElementById('logoImage').style.display = 'none';
+        document.getElementById('logoPlaceholder').style.display = 'block';
+
+        alert(`تم إنشاء الاجتماع بنجاح!\nكود الاجتماع: ${meetingCode}`);
+    }
+
+    // حفظ الاجتماع في Firebase
+    function saveMeetingToFirebase(meeting) {
+        database.ref('meetings/' + meeting.id).set(meeting).then(() => {
+            console.log('تم حفظ الاجتماع بنجاح');
+            // إعادة تحميل الاجتماعات
+            setTimeout(() => {
+                loadMeetings();
+                switchTab('home', document.querySelector('.sidebar-menu li a'));
+            }, 500);
+        }).catch((error) => {
+            console.error('خطأ: ' + error);
+            alert('حدث خطأ في حفظ الاجتماع: ' + error.message);
+        });
+    }
+
+    // إنشاء كود عشوائي للاجتماع
+    function generateMeetingCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
+
+    // إنشاء حقول الخدام ديناميكياً
+    function generateServantFields() {
+        const count = parseInt(document.getElementById('servantsCount').value) || 0;
+        const container = document.getElementById('servantsContainer');
+        
+        container.innerHTML = '';
+        
+        for (let i = 1; i <= count; i++) {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'form-group servant-field';
+            fieldDiv.innerHTML = `
+                <label>اسم الخادم ${i}</label>
+                <input type="text" id="servant${i}" placeholder="أدخل اسم الخادم ${i}">
+            `;
+            container.appendChild(fieldDiv);
+        }
+    }
+
+    // معاينة الشعار
+    function previewLogo(input) {
+        const file = input.files[0];
+        const logoImage = document.getElementById('logoImage');
+        const logoPlaceholder = document.getElementById('logoPlaceholder');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                logoImage.src = e.target.result;
+                logoImage.style.display = 'block';
+                logoPlaceholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            logoImage.style.display = 'none';
+            logoPlaceholder.style.display = 'block';
+        }
+    }
+
+    // تحميل الاجتماعات من Firebase
+    function loadMeetings() {
+        database.ref('meetings/').on('value', (snapshot) => {
+            const meetingsList = document.getElementById('meetingsList');
+            if (!meetingsList) return;
+            
+            meetingsList.innerHTML = '<h3>الاجتماعات الموجودة</h3>';
+            
+            snapshot.forEach((childSnapshot) => {
+                const meeting = childSnapshot.val();
+                addMeetingToList(meeting);
+            });
+        }, (error) => {
+            console.error('خطأ في تحميل الاجتماعات: ' + error.message);
+        });
+    }
+
+    // إضافة الاجتماع للقائمة
+    function addMeetingToList(meeting) {
+        const meetingsList = document.getElementById('meetingsList');
+        
+        const meetingCard = document.createElement('div');
+        meetingCard.className = 'meeting-card';
+        meetingCard.innerHTML = `
+            <div class="meeting-header">
+                <h4>${meeting.name}</h4>
+                <span class="meeting-code">كود: ${meeting.code}</span>
+            </div>
+            <div class="meeting-details">
+                <p><i class="fas fa-graduation-cap"></i> ${meeting.grade}</p>
+                <p><i class="fas fa-user-tie"></i> ${meeting.leader}</p>
+                <p><i class="fas fa-calendar"></i> ${new Date(meeting.createdAt).toLocaleDateString('ar-EG')}</p>
+            </div>
+            <div class="meeting-actions">
+                <button class="btn-enter" onclick="enterMeeting(${meeting.id})">
+                    <i class="fas fa-sign-in-alt"></i> دخول
+                </button>
+                <button class="btn-qr" onclick="showMeetingQR('${meeting.code}')">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+            </div>
+        `;
+        
+        meetingsList.appendChild(meetingCard);
+    }
+
+    // الدخول للاجتماع
+    function enterMeeting(meetingId) {
+        // العثور على الاجتماع
+        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
+        const meeting = meetings.find(m => m.id == meetingId);
+        
+        if (meeting) {
+            // طلب كلمة المرور
+            const enteredPassword = prompt(`أدخل كلمة مرور الاجتماع "${meeting.name}":`);
+            
+            if (enteredPassword === meeting.password) {
+                // كلمة المرور صحيحة، الدخول للاجتماع
+                manageMeeting(meetingId);
+            } else {
+                alert('كلمة المرور غير صحيحة!');
+            }
+        }
+    }
+        // العثور على الاجتماع
+        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
+        const meeting = meetings.find(m => m.id == meetingId);
+        
+        if (meeting) {
+            // حفظ الاجتماع الحالي
+            localStorage.setItem('currentMeeting', JSON.stringify(meeting));
+            
+            // تحديث رأس الاجتماع
+            updateMeetingHeader(meeting);
+            
+            // تحديث الإحصائيات
+            updateMeetingStats(meeting);
+            
+            // تحميل المخدومين والحضور
+            loadMeetingAttendees(meeting);
+            loadMeetingAttendance(meeting);
+            
+            // إضافة الأزرار للقائمة الجانبية
+            addMeetingButtonsToSidebar();
+            
+            // الانتقال لصفحة الاجتماع
+            switchTab('meeting', document.querySelector('.sidebar-menu li a'));
+        }
+    }
+
+    // إضافة أزرار الاجتماع للقائمة الجانبية
+    function addMeetingButtonsToSidebar() {
+        const sidebarMenu = document.querySelector('.sidebar-menu');
+        
+        // مسح الأزرار السابقة إذا كانت موجودة
+        const existingButtons = sidebarMenu.querySelectorAll('.meeting-button');
+        existingButtons.forEach(button => button.remove());
+        
+        // إضافة زر العودة للرئيسية
+        const homeButton = document.createElement('li');
+        homeButton.className = 'meeting-button';
+        homeButton.innerHTML = `<a href="#" onclick="returnToHome(); toggleSidebar(); return false;"><i class="fas fa-arrow-left"></i> العودة للرئيسية</a>`;
+        sidebarMenu.appendChild(homeButton);
+        
+        // إضافة زر المخدومين
+        const attendeesButton = document.createElement('li');
+        attendeesButton.className = 'meeting-button';
+        attendeesButton.innerHTML = `<a href="#" onclick="switchMeetingTab('attendees', this); toggleSidebar(); return false;"><i class="fas fa-users"></i> المخدومين</a>`;
+        sidebarMenu.appendChild(attendeesButton);
+        
+        // إضافة زر تسجيل الحضور
+        const attendanceButton = document.createElement('li');
+        attendanceButton.className = 'meeting-button';
+        attendanceButton.innerHTML = `<a href="#" onclick="switchMeetingTab('attendance', this); toggleSidebar(); return false;"><i class="fas fa-clipboard-check"></i> تسجيل الحضور</a>`;
+        sidebarMenu.appendChild(attendanceButton);
+    }
+
+    // العودة للصفحة الرئيسية
+    function returnToHome() {
+        // مسح الأزرار من القائمة الجانبية
+        const meetingButtons = document.querySelectorAll('.meeting-button');
+        meetingButtons.forEach(button => button.remove());
+        
+        // مسح الاجتماع الحالي
+        localStorage.removeItem('currentMeeting');
+        
+        // العودة للصفحة الرئيسية
+        switchTab('home', document.querySelector('.sidebar-menu li a'));
+    }
+
+    // تحديث رأس الاجتماع
+    function updateMeetingHeader(meeting) {
+        const header = document.getElementById('meetingHeader');
+        const logoHtml = meeting.logo ? `<img src="${meeting.logo}" alt="شعار الاجتماع" class="meeting-logo">` : '<div class="meeting-logo-placeholder"><i class="fas fa-users"></i></div>';
+        
+        header.innerHTML = `
+            <div class="meeting-logo-section">
+                ${logoHtml}
+                <h1 class="meeting-title">${meeting.name}</h1>
+            </div>
+            <div class="meeting-info">
+                <p><i class="fas fa-graduation-cap"></i> ${meeting.grade}</p>
+                <p><i class="fas fa-user-tie"></i> ${meeting.leader}</p>
+                <p><i class="fas fa-key"></i> كود: ${meeting.code}</p>
+            </div>
+        `;
+    }
+
+    // تحديث إحصائيات الاجتماع
+    function updateMeetingStats(meeting) {
+        const stats = document.getElementById('meetingStats');
+        const totalAttendees = meeting.attendees ? meeting.attendees.length : 0;
+        const totalAttendance = meeting.attendance ? meeting.attendance.length : 0;
+        const attendanceRate = totalAttendees > 0 ? Math.round((totalAttendance / totalAttendees) * 100) : 0;
+        
+        stats.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">${totalAttendees}</div>
+                        <div class="stat-label">إجمالي المخدومين</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">${totalAttendance}</div>
+                        <div class="stat-label">الحاضرون</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">${attendanceRate}%</div>
+                        <div class="stat-label">نسبة الحضور</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">${totalAttendees - totalAttendance}</div>
+                        <div class="stat-label">الغائبون</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // تحميل مخدومي الاجتماع
+    function loadMeetingAttendees(meeting) {
+        const attendeesList = document.getElementById('meetingAttendeesList');
+        attendeesList.innerHTML = '';
+        
+        if (meeting.attendees && meeting.attendees.length > 0) {
+            meeting.attendees.forEach(attendee => {
+                const attendeeCard = createAttendeeCard(attendee);
+                attendeesList.appendChild(attendeeCard);
+            });
+        }
+        
+        // تحديث العداد
+        document.getElementById('meetingAttendeesCount').textContent = meeting.attendees ? meeting.attendees.length : 0;
+        
+        // تحديث الإحصائيات
+        updateMeetingStats(meeting);
+    }
+
+    // تحميل حضور الاجتماع
+    function loadMeetingAttendance(meeting) {
+        const attendanceList = document.getElementById('meetingAttendanceList');
+        const attendeesDiv = attendanceList.querySelector('.attendees') || document.createElement('div');
+        attendeesDiv.className = 'attendees';
+        attendeesDiv.innerHTML = '';
+        
+        if (meeting.attendance && meeting.attendance.length > 0) {
+            meeting.attendance.forEach(record => {
+                const recordDiv = document.createElement('div');
+                recordDiv.className = 'attendee-item';
+                recordDiv.innerHTML = `
+                    <div class="attendee-info">
+                        <span class="attendee-name">${record.name}</span>
+                        <span class="attendee-id">${record.id}</span>
+                    </div>
+                    <div class="attendance-time">${record.time}</div>
+                `;
+                attendeesDiv.appendChild(recordDiv);
+            });
+        }
+        
+        // التأكد من وجود العنوان
+        if (!attendanceList.querySelector('h3')) {
+            const title = document.createElement('h3');
+            title.textContent = 'قائمة الحاضرين';
+            attendanceList.insertBefore(title, attendanceList.firstChild);
+        }
+        
+        // إضافة أو تحديث قسم الحاضرين
+        if (!attendanceList.querySelector('.attendees')) {
+            attendanceList.appendChild(attendeesDiv);
+        }
+    }
+
+    // إنشاء بطاقة مخدوم
+    function createAttendeeCard(attendee) {
+        const card = document.createElement('div');
+        card.className = 'person-card';
+        card.innerHTML = `
+            <i class="fas fa-edit edit-icon"></i>
+            <div class="person-header">
+                <div class="person-info-main">
+                    <div class="person-name">${attendee.name}</div>
+                    <div class="person-id">${attendee.id}</div>
+                </div>
+                <div class="person-avatar"><i class="fas fa-user"></i></div>
+            </div>
+            <div class="person-details">
+                <p>${attendee.phone} :الموبايل <i class="fas fa-mobile-alt" style="color:#6c757d"></i></p>
+                <p>الصف: ${attendee.grade} <i class="fas fa-book" style="color:#e74c3c"></i></p>
+                <p>العنوان: ${attendee.address} <i class="fas fa-map-marker-alt" style="color:#e84393"></i></p>
+            </div>
+            <div class="person-actions">
+                <button class="btn-qr-person" onclick="showPersonQR('${attendee.name}', '${attendee.id}')">
+                    <i class="fas fa-mobile-alt"></i>
+                </button>
+            </div>
+        `;
+        return card;
+    }
+
+    // التنقل بين تبويبات الاجتماع
+    function switchMeetingTab(tabId, element) {
+        // إزالة الكلاس active من جميع التبويبات
+        document.querySelectorAll('.meeting-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.meeting-tab-content').forEach(c => c.classList.remove('active'));
+        
+        // إضافة الكلاس active للتبويب المختار
+        element.classList.add('active');
+        document.getElementById('meeting-' + tabId).classList.add('active');
+    }
+
+    // عرض QR code للمخدوم
+    function showPersonQR(name, id) {
+        const qrText = `${name} - ${id}`;
+        alert(`QR Code للمخدوم:\n${qrText}\n\nيمكن مسح هذا الكود لتسجيل حضور المخدوم`);
+    }
+
+    // مسح QR code لتسجيل الحضور
+    function scanQRCode() {
+        // محاكاة مسح QR (في التطبيق الحقيقي سيستخدم كاميرا الجهاز)
+        const scannedCode = prompt('أدخل كود QR المخدوم (أو اسمه ومعرفه):');
+        
+        if (scannedCode) {
+            // البحث عن المخدوم
+            const personCards = document.querySelectorAll('.person-card');
+            let foundPerson = null;
+            
+            personCards.forEach(card => {
+                const name = card.querySelector('.person-name').textContent;
+                const id = card.querySelector('.person-id').textContent;
+                const fullInfo = `${name} - ${id}`;
+                
+                if (fullInfo === scannedCode || name === scannedCode || id === scannedCode) {
+                    foundPerson = { name, id, card };
+                }
+            });
+            
+            if (foundPerson) {
+                // تسجيل الحضور
+                recordAttendance(foundPerson.name, foundPerson.id);
+                alert(`تم تسجيل حضور ${foundPerson.name} بنجاح!`);
+            } else {
+                alert('لم يتم العثور على مخدوم بهذا الكود');
+            }
+        }
+    }
+
+    // تسجيل حضور المخدوم
+    function recordAttendance(name, id) {
+        // إضافة لقائمة الحاضرين (يمكن تحسين هذا لاحقاً)
+        const attendanceList = document.querySelector('.attendance-list') || createAttendanceList();
+        
+        const attendeeItem = document.createElement('div');
+        attendeeItem.className = 'attendee-item';
+        attendeeItem.innerHTML = `
+            <div class="attendee-info">
+                <span class="attendee-name">${name}</span>
+                <span class="attendee-id">${id}</span>
+            </div>
+            <div class="attendance-time">${new Date().toLocaleTimeString('ar-EG')}</div>
+        `;
+        
+        attendanceList.appendChild(attendeeItem);
+    }
+
+    // إنشاء قائمة الحضور إذا لم تكن موجودة
+    function createAttendanceList() {
+        const tabAttendance = document.getElementById('tab-attendance');
+        const attendanceList = document.createElement('div');
+        attendanceList.className = 'attendance-list';
+        
+        const title = document.createElement('h3');
+        title.textContent = 'قائمة الحاضرين';
+        title.style.marginBottom = '15px';
+        title.style.color = 'var(--text-dark)';
+        
+        attendanceList.appendChild(title);
+        tabAttendance.appendChild(attendanceList);
+        
+        return attendanceList;
+    }
+
+    // تحميل الاجتماعات عند بدء التطبيق
+    function loadMeetings() {
+        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
+        meetings.forEach(meeting => addMeetingToList(meeting));
+    }
+
+    // إضافة مخدوم للاجتماع
+    function addAttendeeToMeeting() {
+        const name = document.getElementById('attendeeName').value;
+        const phone = document.getElementById('attendeePhone').value;
+        const grade = document.getElementById('attendeeGrade').value;
+        const address = document.getElementById('attendeeAddress').value;
+
+        if (!name || !phone || !grade || !address) {
+            alert('يرجى ملء جميع الحقول');
+            return;
+        }
+
+        // الحصول على الاجتماع الحالي
+        const currentMeeting = JSON.parse(localStorage.getItem('currentMeeting'));
+        if (!currentMeeting) {
+            alert('لم يتم العثور على اجتماع حالي');
+            return;
+        }
+
+        // إنشاء كائن المخدوم
+        const attendee = {
+            id: 'مخدوم #' + (currentMeeting.attendees ? currentMeeting.attendees.length + 1 : 1),
+            name: name,
+            phone: phone,
+            grade: grade,
+            address: address,
+            qrCode: `${name} - ${'مخدوم #' + (currentMeeting.attendees ? currentMeeting.attendees.length + 1 : 1)}`
+        };
+
+        // إضافة المخدوم للاجتماع
+        if (!currentMeeting.attendees) {
+            currentMeeting.attendees = [];
+        }
+        currentMeeting.attendees.push(attendee);
+
+        // حفظ التحديثات
+        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
+        const meetingIndex = meetings.findIndex(m => m.id == currentMeeting.id);
+        if (meetingIndex !== -1) {
+            meetings[meetingIndex] = currentMeeting;
+            localStorage.setItem('meetings', JSON.stringify(meetings));
+            localStorage.setItem('currentMeeting', JSON.stringify(currentMeeting));
+        }
+
+        // تحديث واجهة المستخدم
+        loadMeetingAttendees(currentMeeting);
+
+        // مسح النموذج وإغلاق النافذة
+        document.getElementById('attendeeName').value = '';
+        document.getElementById('attendeePhone').value = '';
+        document.getElementById('attendeeGrade').value = '';
+        document.getElementById('attendeeAddress').value = '';
+        toggleModal('addAttendeeModal');
+    }
+
+    // مسح QR code لتسجيل الحضور (محدث للاجتماعات)
+    function scanQRCode() {
+        // الحصول على الاجتماع الحالي
+        const currentMeeting = JSON.parse(localStorage.getItem('currentMeeting'));
+        if (!currentMeeting) {
+            alert('لم يتم العثور على اجتماع حالي');
+            return;
+        }
+
+        // محاكاة مسح QR
+        const scannedCode = prompt('أدخل كود QR المخدوم (أو اسمه ومعرفه):');
+        
+        if (scannedCode) {
+            // البحث عن المخدوم في الاجتماع الحالي
+            let foundAttendee = null;
+            
+            if (currentMeeting.attendees) {
+                currentMeeting.attendees.forEach(attendee => {
+                    const fullInfo = `${attendee.name} - ${attendee.id}`;
+                    
+                    if (fullInfo === scannedCode || attendee.name === scannedCode || attendee.id === scannedCode) {
+                        foundAttendee = attendee;
+                    }
+                });
+            }
+            
+            if (foundAttendee) {
+                // تسجيل الحضور
+                recordMeetingAttendance(foundAttendee, currentMeeting);
+                alert(`تم تسجيل حضور ${foundAttendee.name} بنجاح!`);
+            } else {
+                alert('لم يتم العثور على مخدوم بهذا الكود في هذا الاجتماع');
+            }
+        }
+    }
+
+    // تسجيل حضور المخدوم في الاجتماع
+    function recordMeetingAttendance(attendee, meeting) {
+        // إنشاء سجل الحضور
+        const attendanceRecord = {
+            name: attendee.name,
+            id: attendee.id,
+            time: new Date().toLocaleTimeString('ar-EG'),
+            date: new Date().toLocaleDateString('ar-EG')
+        };
+
+        // إضافة للاجتماع
+        if (!meeting.attendance) {
+            meeting.attendance = [];
+        }
+        meeting.attendance.push(attendanceRecord);
+
+        // حفظ التحديثات
+        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
+        const meetingIndex = meetings.findIndex(m => m.id == meeting.id);
+        if (meetingIndex !== -1) {
+            meetings[meetingIndex] = meeting;
+            localStorage.setItem('meetings', JSON.stringify(meetings));
+            localStorage.setItem('currentMeeting', JSON.stringify(meeting));
+        }
+
+        // تحديث واجهة المستخدم
+        loadMeetingAttendance(meeting);
+        
+        // تحديث الإحصائيات
+        updateMeetingStats(meeting);
+    }
+
+    // تحميل الاجتماعات عند تحميل الصفحة
+    window.addEventListener('load', function() {
+        // التحقق من اتصال Firebase
+        if (typeof database === 'undefined') {
+            console.error('Firebase لم يتم تحميله بشكل صحيح');
+            return;
+        }
+        
+        loadMeetings();
+        
+        // التحقق من وجود اجتماع حالي
+        const currentMeeting = localStorage.getItem('currentMeeting');
+        if (currentMeeting) {
+            const meeting = JSON.parse(currentMeeting);
+            updateMeetingHeader(meeting);
+            updateMeetingStats(meeting);
+            loadMeetingAttendees(meeting);
+            loadMeetingAttendance(meeting);
+            addMeetingButtonsToSidebar();
+            switchTab('meeting', document.querySelector('.sidebar-menu li a'));
+        }
+    });
+</script>
+
+</body>
+</html>
