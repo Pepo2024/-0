@@ -36,16 +36,15 @@
         /* حاوية التطبيق (لمحاكاة شاشة الموبايل) */
         .app-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 100%;
             height: 100vh;
-            max-height: 850px;
             background-color: #fff;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 0;
+            box-shadow: none;
         }
 
         /* ----- الرأس (Header) ----- */
@@ -55,6 +54,11 @@
             align-items: center;
             padding: 15px 20px;
             border-bottom: 1px solid var(--border-gray);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: #fff;
+            flex-shrink: 0;
         }
 
         .header-title {
@@ -95,6 +99,8 @@
             overflow-y: auto;
             padding: 15px 20px;
             background-color: #fff;
+            direction: rtl;
+            text-align: right;
         }
 
         /* بطاقة الترحيب */
@@ -453,6 +459,26 @@
             transition: background-color 0.3s;
         }
 
+        .btn-delete-person {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn-delete-person:hover {
+            background-color: #c82333;
+        }
+
         .btn-scan-qr {
             width: 100%;
             background-color: var(--primary-blue);
@@ -673,10 +699,7 @@
         }
 
         .meeting-tabs {
-            display: flex;
-            padding: 10px 20px;
-            background-color: #fff;
-            margin-bottom: 20px;
+            display: none; /* إخفاء أزرار تبويبات الاجتماع من الشاشة الرئيسية */
         }
 
         .meeting-tab {
@@ -817,19 +840,27 @@
         }
         
         .sidebar-menu li.meeting-button {
-            background-color: var(--primary-green);
-            margin-top: 10px;
-            border-radius: 8px;
-            overflow: hidden;
+            margin-top: 5px;
         }
 
         .sidebar-menu li.meeting-button a {
-            color: white;
-            font-weight: 700;
+            color: var(--text-dark);
+            font-weight: 600;
         }
 
-        .sidebar-menu li.meeting-button a:hover {
-            background-color: #008a2c;
+        /* QR Modal */
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .qr-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            word-break: break-all;
         }
         .sidebar-footer {
             padding: 20px;
@@ -924,18 +955,6 @@
                 <div class="form-group">
                     <label>اسم الاجتماع</label>
                     <input type="text" id="meetingName" placeholder="أدخل اسم الاجتماع">
-                </div>
-                
-                <div class="form-group">
-                    <label>شعار الاجتماع</label>
-                    <input type="file" id="meetingLogo" accept="image/*" onchange="previewLogo(this)">
-                    <div id="logoPreview" class="logo-preview">
-                        <img id="logoImage" src="" alt="شعار الاجتماع" style="display: none;">
-                        <div id="logoPlaceholder" class="logo-placeholder-small">
-                            <i class="fas fa-image"></i>
-                            <span>اختر شعار الاجتماع</span>
-                        </div>
-                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -1170,15 +1189,33 @@
                 <input type="text" id="attendeeAddress" placeholder="أدخل العنوان">
             </div>
             
-            <button class="btn-submit" onclick="addAttendeeToMeeting()">إضافة للاجتماع</button>
+            <button class="btn-submit" onclick="addAttendeeToMeeting()">حفظ المخدوم في الاجتماع</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal">
+            <button class="modal-close" onclick="toggleModal('qrModal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2>QR الخاص بالمخدوم</h2>
+                <p>يمكنك حفظ الصورة واستخدامها يوم الاجتماع لتسجيل الحضور</p>
+            </div>
+            <div class="qr-container">
+                <div id="qrCodeContainer"></div>
+            </div>
+            <p id="qrCodeText" class="qr-text"></p>
         </div>
     </div>
 
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <script>
+    let editingAttendeeId = null;
+
     // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyB2_ANJtQTVNXYNflSIBZ7QOlSXtF4Yx8A",
@@ -1193,6 +1230,8 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    console.log('Firebase initialized successfully');
+</script>
 
 <script>
     // التنقل بين التبويبات
@@ -1230,78 +1269,65 @@
 
     // إنشاء اجتماع جديد
     function createMeeting() {
-        const meetingName = document.getElementById('meetingName').value;
-        const meetingGrade = document.getElementById('meetingGrade').value;
-        const serviceLeader = document.getElementById('serviceLeader').value;
-        const meetingPassword = document.getElementById('meetingPassword').value;
-        const logoFile = document.getElementById('meetingLogo').files[0];
+        const meetingName = document.getElementById('meetingName').value.trim();
+        const meetingGrade = document.getElementById('meetingGrade').value.trim();
+        const serviceLeader = document.getElementById('serviceLeader').value.trim();
+        const meetingPassword = document.getElementById('meetingPassword').value.trim();
 
         if (!meetingName || !meetingGrade || !serviceLeader || !meetingPassword) {
             alert('يرجى ملء جميع الحقول الأساسية');
             return;
         }
 
-        // قراءة الشعار إذا تم اختياره
-        if (logoFile) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const logoData = e.target.result;
-                createMeetingWithLogo(meetingName, meetingGrade, serviceLeader, meetingPassword, logoData);
-            };
-            reader.readAsDataURL(logoFile);
-        } else {
-            createMeetingWithLogo(meetingName, meetingGrade, serviceLeader, meetingPassword, null);
-        }
-    }
-
-    // إنشاء الاجتماع مع الشعار
-    function createMeetingWithLogo(name, grade, leader, password, logo) {
         // إنشاء كود عشوائي للاجتماع
         const meetingCode = generateMeetingCode();
 
         // إنشاء كائن الاجتماع
         const meeting = {
             id: Date.now(),
-            name: name,
-            grade: grade,
-            leader: leader,
-            password: password,
-            logo: logo,
+            name: meetingName,
+            grade: meetingGrade,
+            leader: serviceLeader,
+            password: meetingPassword,
             code: meetingCode,
             createdAt: new Date().toISOString(),
             attendees: {},
-            attendance: {}
+            attendance: []
         };
 
-        // حفظ الاجتماع في Firebase
         saveMeetingToFirebase(meeting);
-
-        // مسح النموذج
-        document.getElementById('meetingName').value = '';
-        document.getElementById('meetingGrade').value = '';
-        document.getElementById('serviceLeader').value = '';
-        document.getElementById('meetingPassword').value = '';
-        document.getElementById('meetingLogo').value = '';
-        
-        // إعادة تعيين معاينة الشعار
-        document.getElementById('logoImage').style.display = 'none';
-        document.getElementById('logoPlaceholder').style.display = 'block';
-
-        alert(`تم إنشاء الاجتماع بنجاح!\nكود الاجتماع: ${meetingCode}`);
     }
 
     // حفظ الاجتماع في Firebase
     function saveMeetingToFirebase(meeting) {
+        console.log('جاري حفظ الاجتماع:', meeting);
+        console.log('Firebase database:', database);
+        
+        if (!database) {
+            console.error('قاعدة البيانات غير مهيأة');
+            alert('خطأ: قاعدة البيانات غير متاحة');
+            return;
+        }
+
         database.ref('meetings/' + meeting.id).set(meeting).then(() => {
-            console.log('تم حفظ الاجتماع بنجاح');
-            // إعادة تحميل الاجتماعات
+            console.log('تم حفظ الاجتماع بنجاح في Firebase');
+            
+            // مسح النموذج
+            document.getElementById('meetingName').value = '';
+            document.getElementById('meetingGrade').value = '';
+            document.getElementById('serviceLeader').value = '';
+            document.getElementById('meetingPassword').value = '';
+
+            alert(`تم إنشاء الاجتماع بنجاح!\nكود الاجتماع: ${meeting.code}`);
+            
+            // إعادة تحميل الاجتماعات بعد قليل
             setTimeout(() => {
                 loadMeetings();
-                switchTab('home', document.querySelector('.sidebar-menu li a'));
             }, 500);
         }).catch((error) => {
-            console.error('خطأ: ' + error);
-            alert('حدث خطأ في حفظ الاجتماع: ' + error.message);
+            console.error('خطأ في حفظ الاجتماع:', error);
+            console.error('رمز الخطأ:', error.code);
+            alert('حدث خطأ في حفظ الاجتماع:\n' + error.message);
         });
     }
 
@@ -1401,46 +1427,51 @@
 
     // الدخول للاجتماع
     function enterMeeting(meetingId) {
-        // العثور على الاجتماع
-        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
-        const meeting = meetings.find(m => m.id == meetingId);
-        
-        if (meeting) {
+        // جلب بيانات الاجتماع من Firebase
+        database.ref('meetings/' + meetingId).once('value').then((snapshot) => {
+            const meeting = snapshot.val();
+
+            if (!meeting) {
+                alert('لم يتم العثور على هذا الاجتماع');
+                return;
+            }
+
             // طلب كلمة المرور
             const enteredPassword = prompt(`أدخل كلمة مرور الاجتماع "${meeting.name}":`);
-            
-            if (enteredPassword === meeting.password) {
-                // كلمة المرور صحيحة، الدخول للاجتماع
-                manageMeeting(meetingId);
-            } else {
+
+            if (enteredPassword !== meeting.password) {
                 alert('كلمة المرور غير صحيحة!');
+                return;
             }
-        }
+
+            // كلمة المرور صحيحة، ندخل شاشة الاجتماع
+            manageMeeting(meeting);
+        }).catch((error) => {
+            console.error('خطأ في جلب بيانات الاجتماع:', error);
+            alert('حدث خطأ أثناء فتح الاجتماع: ' + error.message);
+        });
     }
-        // العثور على الاجتماع
-        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
-        const meeting = meetings.find(m => m.id == meetingId);
+
+    // تجهيز شاشة الاجتماع بعد الدخول
+    function manageMeeting(meeting) {
+        // حفظ الاجتماع الحالي
+        localStorage.setItem('currentMeeting', JSON.stringify(meeting));
         
-        if (meeting) {
-            // حفظ الاجتماع الحالي
-            localStorage.setItem('currentMeeting', JSON.stringify(meeting));
-            
-            // تحديث رأس الاجتماع
-            updateMeetingHeader(meeting);
-            
-            // تحديث الإحصائيات
-            updateMeetingStats(meeting);
-            
-            // تحميل المخدومين والحضور
-            loadMeetingAttendees(meeting);
-            loadMeetingAttendance(meeting);
-            
-            // إضافة الأزرار للقائمة الجانبية
-            addMeetingButtonsToSidebar();
-            
-            // الانتقال لصفحة الاجتماع
-            switchTab('meeting', document.querySelector('.sidebar-menu li a'));
-        }
+        // تحديث رأس الاجتماع
+        updateMeetingHeader(meeting);
+        
+        // تحديث الإحصائيات
+        updateMeetingStats(meeting);
+        
+        // تحميل المخدومين والحضور
+        loadMeetingAttendees(meeting);
+        loadMeetingAttendance(meeting);
+        
+        // إضافة الأزرار للقائمة الجانبية
+        addMeetingButtonsToSidebar();
+        
+        // الانتقال لصفحة الاجتماع
+        switchTab('meeting', document.querySelector('.sidebar-menu li a'));
     }
 
     // إضافة أزرار الاجتماع للقائمة الجانبية
@@ -1504,8 +1535,17 @@
     // تحديث إحصائيات الاجتماع
     function updateMeetingStats(meeting) {
         const stats = document.getElementById('meetingStats');
-        const totalAttendees = meeting.attendees ? meeting.attendees.length : 0;
-        const totalAttendance = meeting.attendance ? meeting.attendance.length : 0;
+
+        let totalAttendees = 0;
+        if (meeting.attendees) {
+            if (typeof meeting.attendees === 'object' && !Array.isArray(meeting.attendees)) {
+                totalAttendees = Object.keys(meeting.attendees).length;
+            } else if (Array.isArray(meeting.attendees)) {
+                totalAttendees = meeting.attendees.length;
+            }
+        }
+
+        const totalAttendance = Array.isArray(meeting.attendance) ? meeting.attendance.length : 0;
         const attendanceRate = totalAttendees > 0 ? Math.round((totalAttendance / totalAttendees) * 100) : 0;
         
         stats.innerHTML = `
@@ -1558,15 +1598,30 @@
         const attendeesList = document.getElementById('meetingAttendeesList');
         attendeesList.innerHTML = '';
         
-        if (meeting.attendees && meeting.attendees.length > 0) {
-            meeting.attendees.forEach(attendee => {
-                const attendeeCard = createAttendeeCard(attendee);
-                attendeesList.appendChild(attendeeCard);
-            });
+        let attendeeCount = 0;
+        
+        if (meeting.attendees) {
+            // إذا كانت attendees كائن (من Firebase)
+            if (typeof meeting.attendees === 'object' && !Array.isArray(meeting.attendees)) {
+                Object.keys(meeting.attendees).forEach(key => {
+                    const attendee = meeting.attendees[key];
+                    const attendeeCard = createAttendeeCard(attendee);
+                    attendeesList.appendChild(attendeeCard);
+                    attendeeCount++;
+                });
+            } 
+            // إذا كانت attendees مصفوفة (من localStorage)
+            else if (Array.isArray(meeting.attendees)) {
+                meeting.attendees.forEach(attendee => {
+                    const attendeeCard = createAttendeeCard(attendee);
+                    attendeesList.appendChild(attendeeCard);
+                    attendeeCount++;
+                });
+            }
         }
         
         // تحديث العداد
-        document.getElementById('meetingAttendeesCount').textContent = meeting.attendees ? meeting.attendees.length : 0;
+        document.getElementById('meetingAttendeesCount').textContent = attendeeCount;
         
         // تحديث الإحصائيات
         updateMeetingStats(meeting);
@@ -1612,7 +1667,7 @@
         const card = document.createElement('div');
         card.className = 'person-card';
         card.innerHTML = `
-            <i class="fas fa-edit edit-icon"></i>
+            <i class="fas fa-edit edit-icon" onclick="openEditAttendee('${attendee.id}')"></i>
             <div class="person-header">
                 <div class="person-info-main">
                     <div class="person-name">${attendee.name}</div>
@@ -1626,8 +1681,11 @@
                 <p>العنوان: ${attendee.address} <i class="fas fa-map-marker-alt" style="color:#e84393"></i></p>
             </div>
             <div class="person-actions">
+                <button class="btn-delete-person" onclick="deleteAttendee('${attendee.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
                 <button class="btn-qr-person" onclick="showPersonQR('${attendee.name}', '${attendee.id}')">
-                    <i class="fas fa-mobile-alt"></i>
+                    <i class="fas fa-qrcode"></i>
                 </button>
             </div>
         `;
@@ -1645,89 +1703,34 @@
         document.getElementById('meeting-' + tabId).classList.add('active');
     }
 
-    // عرض QR code للمخدوم
+    // عرض QR code للمخدوم (المعرف الفريد هو كود الـ QR)
     function showPersonQR(name, id) {
-        const qrText = `${name} - ${id}`;
-        alert(`QR Code للمخدوم:\n${qrText}\n\nيمكن مسح هذا الكود لتسجيل حضور المخدوم`);
-    }
+        const qrText = id;
+        const container = document.getElementById('qrCodeContainer');
+        const textEl = document.getElementById('qrCodeText');
 
-    // مسح QR code لتسجيل الحضور
-    function scanQRCode() {
-        // محاكاة مسح QR (في التطبيق الحقيقي سيستخدم كاميرا الجهاز)
-        const scannedCode = prompt('أدخل كود QR المخدوم (أو اسمه ومعرفه):');
-        
-        if (scannedCode) {
-            // البحث عن المخدوم
-            const personCards = document.querySelectorAll('.person-card');
-            let foundPerson = null;
-            
-            personCards.forEach(card => {
-                const name = card.querySelector('.person-name').textContent;
-                const id = card.querySelector('.person-id').textContent;
-                const fullInfo = `${name} - ${id}`;
-                
-                if (fullInfo === scannedCode || name === scannedCode || id === scannedCode) {
-                    foundPerson = { name, id, card };
-                }
-            });
-            
-            if (foundPerson) {
-                // تسجيل الحضور
-                recordAttendance(foundPerson.name, foundPerson.id);
-                alert(`تم تسجيل حضور ${foundPerson.name} بنجاح!`);
-            } else {
-                alert('لم يتم العثور على مخدوم بهذا الكود');
-            }
+        if (!container) {
+            alert(qrText);
+            return;
         }
+
+        container.innerHTML = '';
+        new QRCode(container, {
+            text: qrText,
+            width: 200,
+            height: 200
+        });
+
+        textEl.textContent = `${name} - ${qrText}`;
+        document.getElementById('qrModal').style.display = 'flex';
     }
 
-    // تسجيل حضور المخدوم
-    function recordAttendance(name, id) {
-        // إضافة لقائمة الحاضرين (يمكن تحسين هذا لاحقاً)
-        const attendanceList = document.querySelector('.attendance-list') || createAttendanceList();
-        
-        const attendeeItem = document.createElement('div');
-        attendeeItem.className = 'attendee-item';
-        attendeeItem.innerHTML = `
-            <div class="attendee-info">
-                <span class="attendee-name">${name}</span>
-                <span class="attendee-id">${id}</span>
-            </div>
-            <div class="attendance-time">${new Date().toLocaleTimeString('ar-EG')}</div>
-        `;
-        
-        attendanceList.appendChild(attendeeItem);
-    }
-
-    // إنشاء قائمة الحضور إذا لم تكن موجودة
-    function createAttendanceList() {
-        const tabAttendance = document.getElementById('tab-attendance');
-        const attendanceList = document.createElement('div');
-        attendanceList.className = 'attendance-list';
-        
-        const title = document.createElement('h3');
-        title.textContent = 'قائمة الحاضرين';
-        title.style.marginBottom = '15px';
-        title.style.color = 'var(--text-dark)';
-        
-        attendanceList.appendChild(title);
-        tabAttendance.appendChild(attendanceList);
-        
-        return attendanceList;
-    }
-
-    // تحميل الاجتماعات عند بدء التطبيق
-    function loadMeetings() {
-        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
-        meetings.forEach(meeting => addMeetingToList(meeting));
-    }
-
-    // إضافة مخدوم للاجتماع
+    // إضافة / تعديل مخدوم للاجتماع
     function addAttendeeToMeeting() {
-        const name = document.getElementById('attendeeName').value;
-        const phone = document.getElementById('attendeePhone').value;
-        const grade = document.getElementById('attendeeGrade').value;
-        const address = document.getElementById('attendeeAddress').value;
+        const name = document.getElementById('attendeeName').value.trim();
+        const phone = document.getElementById('attendeePhone').value.trim();
+        const grade = document.getElementById('attendeeGrade').value.trim();
+        const address = document.getElementById('attendeeAddress').value.trim();
 
         if (!name || !phone || !grade || !address) {
             alert('يرجى ملء جميع الحقول');
@@ -1735,115 +1738,211 @@
         }
 
         // الحصول على الاجتماع الحالي
-        const currentMeeting = JSON.parse(localStorage.getItem('currentMeeting'));
-        if (!currentMeeting) {
+        const currentMeetingStr = localStorage.getItem('currentMeeting');
+        if (!currentMeetingStr) {
             alert('لم يتم العثور على اجتماع حالي');
             return;
         }
+        
+        const currentMeeting = JSON.parse(currentMeetingStr);
 
-        // إنشاء كائن المخدوم
-        const attendee = {
-            id: 'مخدوم #' + (currentMeeting.attendees ? currentMeeting.attendees.length + 1 : 1),
+        // إذا كنا في وضع تعديل نستخدم نفس المعرف، غير ذلك ننشئ جديد
+        const attendeeId = editingAttendeeId || ('ATT_' + Date.now());
+
+        // بيانات المخدوم
+        const attendeeData = {
+            id: attendeeId,
             name: name,
             phone: phone,
             grade: grade,
-            address: address,
-            qrCode: `${name} - ${'مخدوم #' + (currentMeeting.attendees ? currentMeeting.attendees.length + 1 : 1)}`
+            address: address
         };
-
-        // إضافة المخدوم للاجتماع
-        if (!currentMeeting.attendees) {
-            currentMeeting.attendees = [];
-        }
-        currentMeeting.attendees.push(attendee);
-
-        // حفظ التحديثات
-        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
-        const meetingIndex = meetings.findIndex(m => m.id == currentMeeting.id);
-        if (meetingIndex !== -1) {
-            meetings[meetingIndex] = currentMeeting;
-            localStorage.setItem('meetings', JSON.stringify(meetings));
-            localStorage.setItem('currentMeeting', JSON.stringify(currentMeeting));
-        }
-
-        // تحديث واجهة المستخدم
-        loadMeetingAttendees(currentMeeting);
-
-        // مسح النموذج وإغلاق النافذة
-        document.getElementById('attendeeName').value = '';
-        document.getElementById('attendeePhone').value = '';
-        document.getElementById('attendeeGrade').value = '';
-        document.getElementById('attendeeAddress').value = '';
-        toggleModal('addAttendeeModal');
+        
+        database.ref('meetings/' + currentMeeting.id + '/attendees/' + attendeeId).set(attendeeData).then(() => {
+            console.log('تم حفظ بيانات المخدوم بنجاح');
+            
+            // مسح النموذج
+            document.getElementById('attendeeName').value = '';
+            document.getElementById('attendeePhone').value = '';
+            document.getElementById('attendeeGrade').value = '';
+            document.getElementById('attendeeAddress').value = '';
+            editingAttendeeId = null;
+            
+            // إغلاق النافذة
+            toggleModal('addAttendeeModal');
+            
+            // بعد الحفظ نعيد جلب الاجتماع محدثاً من Firebase
+            database.ref('meetings/' + currentMeeting.id).once('value').then((snapshot) => {
+                const updatedMeeting = snapshot.val();
+                if (updatedMeeting) {
+                    // حفظ الاجتماع الحالي المحدث
+                    localStorage.setItem('currentMeeting', JSON.stringify(updatedMeeting));
+                    // تحديث قائمة المخدومين والإحصائيات
+                    loadMeetingAttendees(updatedMeeting);
+                    updateMeetingStats(updatedMeeting);
+                }
+                alert('تم حفظ بيانات المخدوم بنجاح!');
+            });
+        }).catch((error) => {
+            console.error('خطأ في حفظ بيانات المخدوم:', error);
+            alert('حدث خطأ في حفظ بيانات المخدوم: ' + error.message);
+        });
     }
 
-    // مسح QR code لتسجيل الحضور (محدث للاجتماعات)
+    // مسح QR code لتسجيل الحضور
     function scanQRCode() {
-        // الحصول على الاجتماع الحالي
-        const currentMeeting = JSON.parse(localStorage.getItem('currentMeeting'));
-        if (!currentMeeting) {
-            alert('لم يتم العثور على اجتماع حالي');
-            return;
-        }
-
-        // محاكاة مسح QR
-        const scannedCode = prompt('أدخل كود QR المخدوم (أو اسمه ومعرفه):');
+        // محاكاة مسح QR (في التطبيق الحقيقي سيستخدم كاميرا الجهاز)
+        const scannedCode = prompt('امسح QR أو أدخل كود المخدوم (المعرف الفريد):');
         
         if (scannedCode) {
-            // البحث عن المخدوم في الاجتماع الحالي
-            let foundAttendee = null;
+            // البحث عن المخدوم في قائمة الاجتماع الحالية
+            const personCards = document.querySelectorAll('#meetingAttendeesList .person-card');
+            let foundPerson = null;
             
-            if (currentMeeting.attendees) {
-                currentMeeting.attendees.forEach(attendee => {
-                    const fullInfo = `${attendee.name} - ${attendee.id}`;
-                    
-                    if (fullInfo === scannedCode || attendee.name === scannedCode || attendee.id === scannedCode) {
-                        foundAttendee = attendee;
-                    }
-                });
-            }
+            personCards.forEach(card => {
+                const name = card.querySelector('.person-name').textContent;
+                const id = card.querySelector('.person-id').textContent;
+                
+                if (id === scannedCode || name === scannedCode) {
+                    foundPerson = { name, id, card };
+                }
+            });
             
-            if (foundAttendee) {
+            if (foundPerson) {
                 // تسجيل الحضور
-                recordMeetingAttendance(foundAttendee, currentMeeting);
-                alert(`تم تسجيل حضور ${foundAttendee.name} بنجاح!`);
+                recordAttendance(foundPerson.name, foundPerson.id);
             } else {
                 alert('لم يتم العثور على مخدوم بهذا الكود في هذا الاجتماع');
             }
         }
     }
 
-    // تسجيل حضور المخدوم في الاجتماع
-    function recordMeetingAttendance(attendee, meeting) {
-        // إنشاء سجل الحضور
-        const attendanceRecord = {
-            name: attendee.name,
-            id: attendee.id,
-            time: new Date().toLocaleTimeString('ar-EG'),
-            date: new Date().toLocaleDateString('ar-EG')
-        };
-
-        // إضافة للاجتماع
-        if (!meeting.attendance) {
-            meeting.attendance = [];
-        }
-        meeting.attendance.push(attendanceRecord);
-
-        // حفظ التحديثات
-        const meetings = JSON.parse(localStorage.getItem('meetings') || '[]');
-        const meetingIndex = meetings.findIndex(m => m.id == meeting.id);
-        if (meetingIndex !== -1) {
-            meetings[meetingIndex] = meeting;
-            localStorage.setItem('meetings', JSON.stringify(meetings));
-            localStorage.setItem('currentMeeting', JSON.stringify(meeting));
+    // فتح نافذة تعديل مخدوم
+    function openEditAttendee(attendeeId) {
+        const currentMeetingStr = localStorage.getItem('currentMeeting');
+        if (!currentMeetingStr) {
+            alert('لا يوجد اجتماع حالي');
+            return;
         }
 
-        // تحديث واجهة المستخدم
-        loadMeetingAttendance(meeting);
-        
-        // تحديث الإحصائيات
-        updateMeetingStats(meeting);
+        const currentMeeting = JSON.parse(currentMeetingStr);
+        let attendee = null;
+
+        if (currentMeeting.attendees) {
+            if (typeof currentMeeting.attendees === 'object' && !Array.isArray(currentMeeting.attendees)) {
+                attendee = currentMeeting.attendees[attendeeId];
+            } else if (Array.isArray(currentMeeting.attendees)) {
+                attendee = currentMeeting.attendees.find(a => a.id === attendeeId);
+            }
+        }
+
+        if (!attendee) {
+            alert('لم يتم العثور على بيانات هذا المخدوم');
+            return;
+        }
+
+        editingAttendeeId = attendeeId;
+        document.getElementById('attendeeName').value = attendee.name || '';
+        document.getElementById('attendeePhone').value = attendee.phone || '';
+        document.getElementById('attendeeGrade').value = attendee.grade || '';
+        document.getElementById('attendeeAddress').value = attendee.address || '';
+
+        document.getElementById('addAttendeeModal').style.display = 'flex';
     }
+
+    // حذف مخدوم من الاجتماع
+    function deleteAttendee(attendeeId) {
+        if (!confirm('هل أنت متأكد من حذف هذا المخدوم من الاجتماع؟')) {
+            return;
+        }
+
+        const currentMeetingStr = localStorage.getItem('currentMeeting');
+        if (!currentMeetingStr) {
+            alert('لا يوجد اجتماع حالي');
+            return;
+        }
+
+        const currentMeeting = JSON.parse(currentMeetingStr);
+
+        database.ref('meetings/' + currentMeeting.id + '/attendees/' + attendeeId).remove().then(() => {
+            // بعد الحذف نعيد جلب الاجتماع
+            database.ref('meetings/' + currentMeeting.id).once('value').then((snapshot) => {
+                const updatedMeeting = snapshot.val();
+                if (updatedMeeting) {
+                    localStorage.setItem('currentMeeting', JSON.stringify(updatedMeeting));
+                    loadMeetingAttendees(updatedMeeting);
+                    updateMeetingStats(updatedMeeting);
+                }
+                alert('تم حذف المخدوم من الاجتماع بنجاح');
+            });
+        }).catch((error) => {
+            console.error('خطأ في حذف المخدوم:', error);
+            alert('حدث خطأ في حذف المخدوم: ' + error.message);
+        });
+    }
+
+    // تسجيل حضور المخدوم (مرة واحدة في اليوم لكل مخدوم)
+    function recordAttendance(name, id) {
+        const currentMeetingStr = localStorage.getItem('currentMeeting');
+        if (!currentMeetingStr) {
+            alert('لا يوجد اجتماع حالي لتسجيل الحضور');
+            return;
+        }
+
+        const currentMeeting = JSON.parse(currentMeetingStr);
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const attendanceRef = database.ref('meetings/' + currentMeeting.id + '/attendance');
+
+        attendanceRef.once('value').then((snapshot) => {
+            let attendance = snapshot.val() || [];
+
+            // تحويل من كائن إلى مصفوفة إذا لزم
+            if (!Array.isArray(attendance)) {
+                attendance = Object.values(attendance);
+            }
+
+            // التحقق هل تم تسجيل هذا المخدوم اليوم من قبل
+            const alreadyRecorded = attendance.some(record => record.id === id && record.date === today);
+            if (alreadyRecorded) {
+                alert('تم تسجيل حضور هذا المخدوم بالفعل اليوم');
+                return;
+            }
+
+            const now = new Date();
+            const newRecord = {
+                id,
+                name,
+                date: today,
+                time: now.toLocaleTimeString('ar-EG')
+            };
+
+            attendance.push(newRecord);
+
+            attendanceRef.set(attendance).then(() => {
+                // بعد حفظ الحضور، نعيد جلب الاجتماع محدثاً لتحديث الشاشة
+                database.ref('meetings/' + currentMeeting.id).once('value').then((snapshot2) => {
+                    const updatedMeeting = snapshot2.val();
+                    if (updatedMeeting) {
+                        localStorage.setItem('currentMeeting', JSON.stringify(updatedMeeting));
+                        loadMeetingAttendance(updatedMeeting);
+                        updateMeetingStats(updatedMeeting);
+                    }
+                    alert(`تم تسجيل حضور ${name} بنجاح!`);
+                });
+            }).catch((error) => {
+                console.error('خطأ في تسجيل الحضور:', error);
+                alert('حدث خطأ في تسجيل الحضور: ' + error.message);
+            });
+        });
+    }
+
+    // إنشاء قائمة الحضور إذا لم تكن موجودة (خاصة بشاشة الاجتماع الحالية)
+    function createAttendanceList() {
+        const attendanceList = document.getElementById('meetingAttendanceList');
+        return attendanceList;
+    }
+
+
 
     // تحميل الاجتماعات عند تحميل الصفحة
     window.addEventListener('load', function() {
